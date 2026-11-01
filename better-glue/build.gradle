@@ -43,6 +43,9 @@ dependencies {
 
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+
+	// Create-Fly：编译期引用 Outliner / AllSpecialTextures / SuperGlueEntity
+	modImplementation "maven.modrinth:create-fly:${project.create_fly_version}"
 }
 
 processResources {
