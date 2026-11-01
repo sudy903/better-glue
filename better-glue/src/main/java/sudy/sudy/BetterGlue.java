@@ -7,14 +7,8 @@ import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sudy.sudy.content.ModContent;
+import sudy.sudy.glue.GlueIntegrity;
 
-/**
- * Better Glue —— Create-Fly 的附属 mod。
- *
- * <p>只加一个物品：胶水查看器。手持时把世界中由 Create-Fly"强力胶"
- * （{@code create:super_glue} 实体）圈出的区域渲染出来。
- * 粘接行为完全由 Create-Fly 提供，本 mod 不新增任何胶水。
- */
 public class BetterGlue implements ModInitializer {
     public static final String MOD_ID = "better-glue";
 
@@ -23,10 +17,11 @@ public class BetterGlue implements ModInitializer {
     @Override
     public void onInitialize() {
         ModContent.register();
+        GlueIntegrity.register();
 
         ItemGroupEvents.modifyEntriesEvent(ItemGroups.TOOLS).register(entries -> entries.add(ModContent.GLUE_VIEWER));
 
-        LOGGER.info("[better-glue] glue viewer ready");
+        LOGGER.info("[better-glue] ready（胶水查看器 + 悬空胶水清理）");
     }
 
     public static Identifier id(String path) {
