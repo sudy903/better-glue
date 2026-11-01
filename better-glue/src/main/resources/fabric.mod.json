@@ -1,0 +1,42 @@
+{
+	"schemaVersion": 1,
+	"id": "better-glue",
+	"version": "${version}",
+	"name": "Better Glue",
+	"description": "A standalone super glue: right-click two corners to glue a region, sneak-right-click to remove it. Rebuilt from Create-Fly's super glue without any Create dependency.",
+	"authors": [
+		"sudy"
+	],
+	"contact": {
+		"homepage": "https://fabricmc.net/",
+		"sources": "https://github.com/FabricMC/fabric-example-mod"
+	},
+	"license": "CC0-1.0",
+	"icon": "assets/better-glue/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"sudy.sudy.BetterGlue"
+		],
+		"client": [
+			"sudy.sudy.client.BetterGlueClient"
+		],
+		"fabric-datagen": [
+			"sudy.sudy.client.BetterGlueDataGenerator"
+		]
+	},
+	"mixins": [
+		"better-glue.mixins.json",
+		{
+			"config": "better-glue.client.mixins.json",
+			"environment": "client"
+		}
+	],
+	"depends": {
+		"fabricloader": ">=0.20.0",
+		"minecraft": "~1.21.10",
+		"java": ">=21",
+		"fabric-api": "*",
+		"create": "*"
+	}
+}

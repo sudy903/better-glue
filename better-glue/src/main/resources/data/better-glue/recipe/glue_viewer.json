@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "tools",
+  "ingredients": [
+    "minecraft:glass_pane",
+    "create:super_glue"
+  ],
+  "result": {
+    "count": 1,
+    "id": "better-glue:glue_viewer"
+  }
+}
