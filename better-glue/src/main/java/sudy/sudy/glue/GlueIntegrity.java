@@ -29,9 +29,9 @@ import java.util.UUID;
 public final class GlueIntegrity {
 
     /** 检查间隔（tick）。 */
-    private static final int SCAN_INTERVAL_TICKS = 40;
+    private static final int SCAN_INTERVAL_TICKS = 7;
     /** 连续多少次为空才删，40 × 3 ≈ 6 秒。 */
-    private static final int EMPTY_SCANS_BEFORE_REMOVE = 3;
+    private static final int EMPTY_SCANS_BEFORE_REMOVE = 2;
 
     /** 胶水实体 UUID → 连续为空次数。 */
     private static final Map<UUID, Integer> EMPTY_STREAK = new HashMap<>();
