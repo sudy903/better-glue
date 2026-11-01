@@ -17,23 +17,13 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Box;
 import sudy.sudy.content.GlueViewerItem;
 
-/**
- * 接管 Create-Fly 的 {@code create:super_glue} 实体的渲染。
- *
- * <p>Create-Fly 自己那个渲染器本来就什么都不画（{@code shouldRender} 恒 false，它靠 Outliner 画框），
- * 所以这里把它替换掉不会有任何视觉损失。替换后：
- * <ul>
- *     <li>平时：什么都不画，和原版行为一致</li>
- *     <li>本地玩家主手/副手拿着 {@link GlueViewerItem} 时：把每个胶水区域（实体自带 AABB）
- *         用 Create 自己的胶水贴图 {@code create:textures/special/glue.png} 画出来</li>
- * </ul>
- */
 public class SuperGlueEntityRenderer extends EntityRenderer<Entity, SuperGlueEntityRenderer.GlueRenderState> {
 
-    /** 直接复用 Create-Fly 的胶水面贴图。 */
     private static final Identifier GLUE_TEXTURE = Identifier.of("create", "textures/special/glue.png");
 
-    /** 稍微往外撑一点，避免和方块表面 z-fighting。 */
+    /** 诊断日志计数，定位完可以删。 */
+    private static int diagnostics;
+
     private static final double INFLATE = 0.005D;
     private static final int ALPHA = 165;
 
@@ -49,13 +39,20 @@ public class SuperGlueEntityRenderer extends EntityRenderer<Entity, SuperGlueEnt
     @Override
     public boolean shouldRender(Entity entity, Frustum frustum, double x, double y, double z) {
         Box box = entity.getBoundingBox();
-        return isHoldingViewer() && box.getLengthX() > 0.0D && box.getLengthY() > 0.0D;
+        boolean holding = isHoldingViewer();
+        if (diagnostics < 6) {
+            diagnostics++;
+            sudy.sudy.BetterGlue.LOGGER.info(
+                "[better-glue] shouldRender: box={}x{}x{} holdingViewer={} entity={}",
+                box.getLengthX(), box.getLengthY(), box.getLengthZ(), holding, entity.getType()
+            );
+        }
+        return holding && box.getLengthX() > 0.0D && box.getLengthY() > 0.0D;
     }
 
     @Override
     public void updateRenderState(Entity entity, GlueRenderState state, float tickProgress) {
         super.updateRenderState(entity, state, tickProgress);
-        // render 阶段的 matrices 已经平移到实体位置，这里换成"相对实体"的坐标
         state.box = entity.getBoundingBox()
             .offset(-entity.getX(), -entity.getY(), -entity.getZ())
             .expand(INFLATE);
@@ -67,7 +64,22 @@ public class SuperGlueEntityRenderer extends EntityRenderer<Entity, SuperGlueEnt
         if (!isHoldingViewer() || state.layer == null || state.box.getLengthX() <= 0.0D) {
             return;
         }
-        queue.submitCustom(matrices, state.layer, state);
+        if (diagnostics < 12) {
+            diagnostics++;
+            sudy.sudy.BetterGlue.LOGGER.info(
+                "[better-glue] render: box={}x{}x{} min=({}, {}, {}) layer={}",
+                state.box.getLengthX(), state.box.getLengthY(), state.box.getLengthZ(),
+                state.box.minX, state.box.minY, state.box.minZ, state.layer
+            );
+        }
+        try {
+            queue.submitCustom(matrices, state.layer, state);
+        } catch (Throwable t) {
+            if (diagnostics < 14) {
+                diagnostics++;
+                sudy.sudy.BetterGlue.LOGGER.error("[better-glue] submitCustom 失败", t);
+            }
+        }
     }
 
     private static boolean isHoldingViewer() {
@@ -79,7 +91,6 @@ public class SuperGlueEntityRenderer extends EntityRenderer<Entity, SuperGlueEnt
             || player.getOffHandStack().getItem() instanceof GlueViewerItem;
     }
 
-    /** 由 render 阶段填充的状态，同时也是要提交给队列的绘制指令。 */
     public static class GlueRenderState extends EntityRenderState implements OrderedRenderCommandQueue.Custom {
 
         public Box box = new Box(0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D);
@@ -94,13 +105,10 @@ public class SuperGlueEntityRenderer extends EntityRenderer<Entity, SuperGlueEnt
             double y1 = box.maxY;
             double z1 = box.maxZ;
 
-            // -X / +X
             quad(entry, vertexConsumer, x0, y0, z0, x0, y0, z1, x0, y1, z1, x0, y1, z0);
             quad(entry, vertexConsumer, x1, y0, z1, x1, y0, z0, x1, y1, z0, x1, y1, z1);
-            // -Y / +Y
             quad(entry, vertexConsumer, x0, y0, z1, x1, y0, z1, x1, y0, z0, x0, y0, z0);
             quad(entry, vertexConsumer, x0, y1, z0, x1, y1, z0, x1, y1, z1, x0, y1, z1);
-            // -Z / +Z
             quad(entry, vertexConsumer, x1, y0, z0, x0, y0, z0, x0, y1, z0, x1, y1, z0);
             quad(entry, vertexConsumer, x0, y0, z1, x1, y0, z1, x1, y1, z1, x0, y1, z1);
         }
@@ -116,7 +124,6 @@ public class SuperGlueEntityRenderer extends EntityRenderer<Entity, SuperGlueEnt
             vertex(entry, vertexConsumer, bx, by, bz, 0.0F, 0.0F);
             vertex(entry, vertexConsumer, cx, cy, cz, 1.0F, 0.0F);
             vertex(entry, vertexConsumer, dx, dy, dz, 1.0F, 1.0F);
-            // 反绕序：背面剔除会只留下朝向相机的那一份
             vertex(entry, vertexConsumer, dx, dy, dz, 1.0F, 1.0F);
             vertex(entry, vertexConsumer, cx, cy, cz, 1.0F, 0.0F);
             vertex(entry, vertexConsumer, bx, by, bz, 0.0F, 0.0F);
