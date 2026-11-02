@@ -15,21 +15,25 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import sudy.sudy.glue.GlueBoxes;
 import sudy.sudy.glue.GlueFlood;
 import sudy.sudy.glue.QuickGlueHandler;
 import sudy.sudy.net.QuickGluePayload;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 public final class QuickSelectClient {
 
-    private static final Object SLOT = new Object();
     private static final int GREEN = 0x68c586;
     private static final int YELLOW = 0xc5b548;
 
     private static BlockPos firstPos;
-    private static BlockPos lastHover;
-    private static boolean wasReachable;
+    private static BlockPos previewFor;
+    private static List<Box> preview = List.of();
+    private static boolean reachable;
+    private static final List<Object> SLOTS = new ArrayList<>();
 
     private QuickSelectClient() {
     }
@@ -67,7 +71,7 @@ public final class QuickSelectClient {
 
         if (firstPos == null) {
             firstPos = pos;
-            lastHover = null;
+            previewFor = null;
             CreateLang.translate("super_glue.first_pos").sendStatus(player);
             return;
         }
@@ -77,9 +81,8 @@ public final class QuickSelectClient {
             return;
         }
 
-        if (!isReachable(player.getEntityWorld(), firstPos, pos)) {
-            lastHover = pos;
-            wasReachable = false;
+        Set<BlockPos> cells = GlueFlood.connected(player.getEntityWorld(), firstPos, pos, QuickGlueHandler.MAX_SIDE);
+        if (cells == null || cells.isEmpty()) {
             CreateLang.translate("super_glue.cannot_reach").sendStatus(player);
             return;
         }
@@ -87,11 +90,6 @@ public final class QuickSelectClient {
         ClientPlayNetworking.send(new QuickGluePayload(firstPos, pos));
         CreateLang.translate("super_glue.success").sendStatus(player);
         clear();
-    }
-
-    private static boolean isReachable(World world, BlockPos from, BlockPos to) {
-        Set<BlockPos> cells = GlueFlood.connected(world, from, to, QuickGlueHandler.MAX_SIDE);
-        return cells != null && !cells.isEmpty();
     }
 
     private static void tick(MinecraftClient client) {
@@ -116,12 +114,13 @@ public final class QuickSelectClient {
         }
 
         BlockPos hovered = hit.getBlockPos();
-        boolean changed = !hovered.equals(lastHover);
-        boolean reachable = isReachable(client.world, firstPos, hovered);
 
-        if (changed || reachable != wasReachable) {
-            lastHover = hovered;
-            wasReachable = reachable;
+        if (!hovered.equals(previewFor)) {
+            previewFor = hovered;
+            Set<BlockPos> cells = GlueFlood.connected(client.world, firstPos, hovered, QuickGlueHandler.MAX_SIDE);
+            reachable = cells != null && !cells.isEmpty();
+            preview = reachable ? GlueBoxes.forCells(cells) : List.of();
+
             if (reachable) {
                 CreateLang.translate("super_glue.click_to_confirm").sendStatus(client.player);
             } else {
@@ -129,19 +128,44 @@ public final class QuickSelectClient {
             }
         }
 
-        Box box = new Box(Vec3d.of(firstPos), Vec3d.of(hovered)).stretch(1.0D, 1.0D, 1.0D);
+        int shown = 0;
+        if (reachable) {
+            for (Box box : preview) {
+                show(slot(shown++), box, GREEN);
+            }
+        } else {
+            Box box = new Box(Vec3d.of(firstPos), Vec3d.of(hovered)).stretch(1.0D, 1.0D, 1.0D);
+            show(slot(shown++), box, YELLOW);
+        }
+        for (int i = shown; i < SLOTS.size(); i++) {
+            Outliner.getInstance().remove(SLOTS.get(i));
+        }
+    }
+
+    private static void show(Object slot, Box box, int color) {
         Outliner.getInstance()
-            .showAABB(SLOT, box)
-            .colored(reachable ? GREEN : YELLOW)
+            .showAABB(slot, box)
+            .colored(color)
             .withFaceTextures(AllSpecialTextures.GLUE, AllSpecialTextures.GLUE)
             .disableLineNormals()
             .lineWidth(1.0F / 16.0F);
     }
 
+    private static Object slot(int index) {
+        while (SLOTS.size() <= index) {
+            SLOTS.add(new Object());
+        }
+        return SLOTS.get(index);
+    }
+
     private static void clear() {
+        for (Object slot : SLOTS) {
+            Outliner.getInstance().remove(slot);
+        }
+        SLOTS.clear();
         firstPos = null;
-        lastHover = null;
-        wasReachable = false;
-        Outliner.getInstance().remove(SLOT);
+        previewFor = null;
+        preview = List.of();
+        reachable = false;
     }
 }
