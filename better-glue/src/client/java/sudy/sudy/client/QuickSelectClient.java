@@ -8,6 +8,7 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
@@ -24,6 +25,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * 快速框选模式的客户端逻辑。
+ *
+ * <p>选点阶段的预览就是最终会生成的盒子：悬停变化时跑一次 GlueFlood + GlueBoxes，
+ * 把每个盒子分别用 Outliner 画出来。
+ */
 public final class QuickSelectClient {
 
     private static final int GREEN = 0x68c586;
@@ -86,6 +93,10 @@ public final class QuickSelectClient {
             CreateLang.translate("super_glue.cannot_reach").sendStatus(player);
             return;
         }
+        if (GlueBoxes.forCells(cells) == null) {
+            player.sendMessage(Text.translatable("better-glue.msg.too_complex"), true);
+            return;
+        }
 
         ClientPlayNetworking.send(new QuickGluePayload(firstPos, pos));
         CreateLang.translate("super_glue.success").sendStatus(player);
@@ -118,13 +129,20 @@ public final class QuickSelectClient {
         if (!hovered.equals(previewFor)) {
             previewFor = hovered;
             Set<BlockPos> cells = GlueFlood.connected(client.world, firstPos, hovered, QuickGlueHandler.MAX_SIDE);
-            reachable = cells != null && !cells.isEmpty();
-            preview = reachable ? GlueBoxes.forCells(cells) : List.of();
+            List<Box> boxes = (cells == null || cells.isEmpty()) ? null : GlueBoxes.forCells(cells);
 
-            if (reachable) {
-                CreateLang.translate("super_glue.click_to_confirm").sendStatus(client.player);
+            if (boxes == null) {
+                reachable = false;
+                preview = List.of();
+                if (cells == null || cells.isEmpty()) {
+                    CreateLang.translate("super_glue.cannot_reach").sendStatus(client.player);
+                } else {
+                    client.player.sendMessage(Text.translatable("better-glue.msg.too_complex"), true);
+                }
             } else {
-                CreateLang.translate("super_glue.cannot_reach").sendStatus(client.player);
+                reachable = true;
+                preview = boxes;
+                CreateLang.translate("super_glue.click_to_confirm").sendStatus(client.player);
             }
         }
 
