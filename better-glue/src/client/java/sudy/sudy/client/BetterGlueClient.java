@@ -18,6 +18,7 @@ public class BetterGlueClient implements ClientModInitializer {
         }
 
         GlueViewerOverlay.register();
-        BetterGlue.LOGGER.info("[better-glue] 胶水查看器已启用（Outliner 渲染）");
+        QuickSelectClient.register();
+        BetterGlue.LOGGER.info("[better-glue] 胶水查看器 + 快速框选已启用");
     }
 }
