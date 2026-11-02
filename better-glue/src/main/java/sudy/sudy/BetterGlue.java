@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import sudy.sudy.content.ModContent;
 import sudy.sudy.glue.GlueInfiniteDurability;
 import sudy.sudy.glue.GlueIntegrity;
+import sudy.sudy.glue.QuickGlueHandler;
 
 public class BetterGlue implements ModInitializer {
     public static final String MOD_ID = "better-glue";
@@ -20,6 +21,7 @@ public class BetterGlue implements ModInitializer {
         ModContent.register();
         GlueIntegrity.register();
         GlueInfiniteDurability.register();
+        QuickGlueHandler.register();
 
         ItemGroupEvents.modifyEntriesEvent(ItemGroups.TOOLS).register(entries -> entries.add(ModContent.GLUE_VIEWER));
 
