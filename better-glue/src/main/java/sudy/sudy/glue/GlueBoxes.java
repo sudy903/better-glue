@@ -117,22 +117,22 @@ public final class GlueBoxes {
         int y1 = (int) box.maxY - 1;
         int z1 = (int) box.maxZ - 1;
 
-        if (touches(cells, x0 - 1, y0, y1, z0, z1, Axis.X)) {
+        if (allSolid(cells, x0 - 1, y0, y1, z0, z1, Axis.X)) {
             x0--;
         }
-        if (touches(cells, x1 + 1, y0, y1, z0, z1, Axis.X)) {
+        if (allSolid(cells, x1 + 1, y0, y1, z0, z1, Axis.X)) {
             x1++;
         }
-        if (touches(cells, y0 - 1, x0, x1, z0, z1, Axis.Y)) {
+        if (allSolid(cells, y0 - 1, x0, x1, z0, z1, Axis.Y)) {
             y0--;
         }
-        if (touches(cells, y1 + 1, x0, x1, z0, z1, Axis.Y)) {
+        if (allSolid(cells, y1 + 1, x0, x1, z0, z1, Axis.Y)) {
             y1++;
         }
-        if (touches(cells, z0 - 1, x0, x1, y0, y1, Axis.Z)) {
+        if (allSolid(cells, z0 - 1, x0, x1, y0, y1, Axis.Z)) {
             z0--;
         }
-        if (touches(cells, z1 + 1, x0, x1, y0, y1, Axis.Z)) {
+        if (allSolid(cells, z1 + 1, x0, x1, y0, y1, Axis.Z)) {
             z1++;
         }
 
@@ -143,7 +143,8 @@ public final class GlueBoxes {
         X, Y, Z
     }
 
-    private static boolean touches(Set<BlockPos> cells, int plane, int a0, int a1, int b0, int b1, Axis axis) {
+    /** Only expand when the whole plane is solid, so an expanded box never contains air. */
+    private static boolean allSolid(Set<BlockPos> cells, int plane, int a0, int a1, int b0, int b1, Axis axis) {
         for (int a = a0; a <= a1; a++) {
             for (int b = b0; b <= b1; b++) {
                 BlockPos pos = switch (axis) {
@@ -151,11 +152,11 @@ public final class GlueBoxes {
                     case Y -> new BlockPos(a, plane, b);
                     case Z -> new BlockPos(a, b, plane);
                 };
-                if (cells.contains(pos)) {
-                    return true;
+                if (!cells.contains(pos)) {
+                    return false;
                 }
             }
         }
-        return false;
+        return true;
     }
 }
