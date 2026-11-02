@@ -2,7 +2,9 @@
 	"required": true,
 	"package": "sudy.sudy.mixin",
 	"compatibilityLevel": "JAVA_21",
-	"mixins": [],
+	"mixins": [
+		"SuperGlueNoDamageMixin"
+	],
 	"injectors": {
 		"defaultRequire": 1
 	},
