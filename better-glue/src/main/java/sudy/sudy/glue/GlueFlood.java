@@ -9,11 +9,18 @@ import java.util.Deque;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * 在两点张成的盒子里，从起点泛洪出连通的非空气方块。
+ *
+ * <p>注意：空气只用来"阻断扩散"，绝不会进入返回的集合——
+ * 否则盒分解会把空气也覆盖进去（历史 bug）。
+ */
 public final class GlueFlood {
 
     private GlueFlood() {
     }
 
+    /** 返回连通集合；终点不可达或端点是空气则返回 {@code null}。 */
     public static Set<BlockPos> connected(World world, BlockPos from, BlockPos to, int maxSide) {
         int minX = Math.min(from.getX(), to.getX());
         int minY = Math.min(from.getY(), to.getY());
@@ -29,9 +36,12 @@ public final class GlueFlood {
             return null;
         }
 
-        Set<BlockPos> visited = new HashSet<>();
+        Set<BlockPos> solids = new HashSet<>();
+        Set<BlockPos> seen = new HashSet<>();
         Deque<BlockPos> queue = new ArrayDeque<>();
-        visited.add(from);
+
+        solids.add(from);
+        seen.add(from);
         queue.add(from);
 
         while (!queue.isEmpty()) {
@@ -43,16 +53,17 @@ public final class GlueFlood {
                     || next.getZ() < minZ || next.getZ() > maxZ) {
                     continue;
                 }
-                if (!visited.add(next)) {
+                if (!seen.add(next)) {
                     continue;
                 }
                 if (world.getBlockState(next).isAir()) {
                     continue;
                 }
+                solids.add(next);
                 queue.add(next);
             }
         }
 
-        return visited.contains(to) ? visited : null;
+        return solids.contains(to) ? solids : null;
     }
 }
