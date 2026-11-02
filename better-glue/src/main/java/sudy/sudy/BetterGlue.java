@@ -7,6 +7,7 @@ import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sudy.sudy.content.ModContent;
+import sudy.sudy.glue.GlueInfiniteDurability;
 import sudy.sudy.glue.GlueIntegrity;
 
 public class BetterGlue implements ModInitializer {
@@ -18,10 +19,11 @@ public class BetterGlue implements ModInitializer {
     public void onInitialize() {
         ModContent.register();
         GlueIntegrity.register();
+        GlueInfiniteDurability.register();
 
         ItemGroupEvents.modifyEntriesEvent(ItemGroups.TOOLS).register(entries -> entries.add(ModContent.GLUE_VIEWER));
 
-        LOGGER.info("[better-glue] ready（胶水查看器 + 悬空胶水清理）");
+        LOGGER.info("[better-glue] ready（查看器 + 悬空清理 + 无限耐久 + 模式切换）");
     }
 
     public static Identifier id(String path) {
