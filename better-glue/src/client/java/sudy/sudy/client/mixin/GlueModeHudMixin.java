@@ -51,13 +51,13 @@ public class GlueModeHudMixin {
         int x = 4;
         int y = client.getWindow().getScaledHeight() - 4 - LINE_HEIGHT * (modes.length + 1);
 
-        context.drawText(font, "强力胶模式  [Ctrl + 滚轮]", x, y, 0xFFFFFF, true);
+        context.drawText(font, "强力胶模式  [Ctrl + 滚轮]", x, y, 0xFFFFFFFF, true);
         y += LINE_HEIGHT;
 
         for (GlueMode mode : modes) {
             boolean active = mode == GlueModeState.get();
             String line = (active ? "▶ " : "   ") + mode.label();
-            context.drawText(font, line, x, y, active ? 0x66FF66 : 0x9A9A9A, true);
+            context.drawText(font, line, x, y, active ? 0xFF66FF66 : 0xFF9A9A9A, true);
             y += LINE_HEIGHT;
         }
     }
