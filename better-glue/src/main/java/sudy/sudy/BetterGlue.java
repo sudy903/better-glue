@@ -14,6 +14,9 @@ import sudy.sudy.glue.QuickGlueHandler;
 public class BetterGlue implements ModInitializer {
     public static final String MOD_ID = "better-glue";
 
+    /** 构建标记：确认装的是哪一版，每次改动都会变。 */
+    public static final String BUILD = "v6";
+
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
     @Override
@@ -25,7 +28,7 @@ public class BetterGlue implements ModInitializer {
 
         ItemGroupEvents.modifyEntriesEvent(ItemGroups.TOOLS).register(entries -> entries.add(ModContent.GLUE_VIEWER));
 
-        LOGGER.info("[better-glue] ready（查看器 + 悬空清理 + 无限耐久 + 模式切换）");
+        LOGGER.info("[better-glue] ready build={}（查看器 + 悬空清理 + 无限耐久 + 模式切换）", BUILD);
     }
 
     public static Identifier id(String path) {
