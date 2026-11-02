@@ -44,8 +44,12 @@ public final class QuickGlueHandler {
         }
 
         List<Box> boxes = GlueBoxes.forCells(cells);
-        String group = GROUP_PREFIX + UUID.randomUUID();
+        if (boxes == null) {
+            player.sendMessage(Text.translatable("better-glue.msg.too_complex"), true);
+            return;
+        }
 
+        String group = GROUP_PREFIX + UUID.randomUUID();
         for (Box box : boxes) {
             SuperGlueEntity glue = new SuperGlueEntity(world, box);
             glue.setCustomName(Text.literal(group));
