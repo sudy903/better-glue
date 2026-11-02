@@ -5,17 +5,13 @@ import com.zurrtum.create.client.catnip.outliner.Outliner;
 import com.zurrtum.create.client.foundation.utility.CreateLang;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
 import sudy.sudy.glue.GlueBoxes;
 import sudy.sudy.glue.GlueFlood;
 import sudy.sudy.glue.QuickGlueHandler;
@@ -42,26 +38,13 @@ public final class QuickSelectClient {
     }
 
     public static void register() {
-        UseBlockCallback.EVENT.register(QuickSelectClient::onUseBlock);
         ClientTickEvents.END_CLIENT_TICK.register(QuickSelectClient::tick);
     }
 
-    private static ActionResult onUseBlock(PlayerEntity player, World world, Hand hand, BlockHitResult hit) {
-        if (hand != Hand.MAIN_HAND) {
-            return ActionResult.PASS;
-        }
-        if (GlueModeState.get() != GlueMode.QUICK_SELECT) {
-            return ActionResult.PASS;
-        }
-        if (!GlueModeState.isHoldingSuperGlue(player)) {
-            return ActionResult.PASS;
-        }
-
-        LOGGER.info("[better-glue] useBlock: client={} pos={}", world.isClient(), hit.getBlockPos());
-        if (world.isClient()) {
-            onClientClick(player, hit.getBlockPos());
-        }
-        return ActionResult.SUCCESS;
+    /** 由 SelectionHandlerMixin 在 Create 的右键处理入口调用。 */
+    public static void handleClick(PlayerEntity player, BlockPos pos) {
+        LOGGER.info("[better-glue] handleClick pos={}", pos);
+        onClientClick(player, pos);
     }
 
     private static void onClientClick(PlayerEntity player, BlockPos pos) {
