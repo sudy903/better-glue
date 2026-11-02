@@ -49,6 +49,11 @@ public final class QuickGlueHandler {
             return;
         }
 
+        int airInside = 0;
+        for (Box box : boxes) {
+            airInside += countAir(world, box);
+        }
+
         String group = GROUP_PREFIX + UUID.randomUUID();
         for (Box box : boxes) {
             SuperGlueEntity glue = new SuperGlueEntity(world, box);
@@ -58,6 +63,22 @@ public final class QuickGlueHandler {
             glue.spawnParticles();
         }
 
-        BetterGlue.LOGGER.info("[better-glue] 快速框选：{} 格 → {} 个胶水盒", cells.size(), boxes.size());
+        BetterGlue.LOGGER.info(
+            "[better-glue] 快速框选：{} 格 → {} 盒，盒内空气 {} 格",
+            cells.size(), boxes.size(), airInside
+        );
+    }
+
+    /** 统计这个盒子里有多少空气格——用来验证"盒子是否紧贴方块"。 */
+    private static int countAir(ServerWorld world, Box box) {
+        int air = 0;
+        BlockPos min = BlockPos.ofFloored(box.minX, box.minY, box.minZ);
+        BlockPos max = BlockPos.ofFloored(box.maxX - 1.0E-3D, box.maxY - 1.0E-3D, box.maxZ - 1.0E-3D);
+        for (BlockPos pos : BlockPos.iterate(min, max)) {
+            if (world.getBlockState(pos).isAir()) {
+                air++;
+            }
+        }
+        return air;
     }
 }
