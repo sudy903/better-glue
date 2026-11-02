@@ -41,7 +41,7 @@ public class MouseScrollMixin {
             return;
         }
 
-        GlueModeState.cycle(vertical > 0.0D ? 1 : -1);
+        GlueModeState.cycle(vertical > 0.0D ? -1 : 1);
         ci.cancel();
     }
 }
