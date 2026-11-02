@@ -4,7 +4,8 @@
 	"compatibilityLevel": "JAVA_21",
 	"client": [
 		"MouseScrollMixin",
-		"GlueModeHudMixin"
+		"GlueModeHudMixin",
+		"SelectionHandlerMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
