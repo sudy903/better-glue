@@ -25,13 +25,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-/**
- * 快速框选模式的客户端逻辑。
- *
- * <p>选点阶段的预览就是最终会生成的盒子：悬停变化时跑一次 GlueFlood + GlueBoxes，
- * 把每个盒子分别用 Outliner 画出来。
- */
 public final class QuickSelectClient {
+
+    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger("better-glue");
 
     private static final int GREEN = 0x68c586;
     private static final int YELLOW = 0xc5b548;
@@ -61,6 +57,7 @@ public final class QuickSelectClient {
             return ActionResult.PASS;
         }
 
+        LOGGER.info("[better-glue] useBlock: client={} pos={}", world.isClient(), hit.getBlockPos());
         if (world.isClient()) {
             onClientClick(player, hit.getBlockPos());
         }
@@ -77,6 +74,7 @@ public final class QuickSelectClient {
         }
 
         if (firstPos == null) {
+            LOGGER.info("[better-glue] 记录第一角 {}", pos);
             firstPos = pos;
             previewFor = null;
             CreateLang.translate("super_glue.first_pos").sendStatus(player);
@@ -98,6 +96,7 @@ public final class QuickSelectClient {
             return;
         }
 
+        LOGGER.info("[better-glue] 发送框选 {} → {}", firstPos, pos);
         ClientPlayNetworking.send(new QuickGluePayload(firstPos, pos));
         CreateLang.translate("super_glue.success").sendStatus(player);
         clear();
@@ -130,6 +129,7 @@ public final class QuickSelectClient {
             previewFor = hovered;
             Set<BlockPos> cells = GlueFlood.connected(client.world, firstPos, hovered, QuickGlueHandler.MAX_SIDE);
             List<Box> boxes = (cells == null || cells.isEmpty()) ? null : GlueBoxes.forCells(cells);
+            LOGGER.info("[better-glue] 预览: cells={} boxes={}", cells == null ? -1 : cells.size(), boxes == null ? -1 : boxes.size());
 
             if (boxes == null) {
                 reachable = false;
