@@ -2,7 +2,6 @@ package sudy.sudy.client.mixin;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.Mouse;
-import net.minecraft.client.util.InputUtil;
 import org.lwjgl.glfw.GLFW;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -22,11 +21,10 @@ public class MouseScrollMixin {
         if (!GlueModeState.isHoldingSuperGlue(client.player)) {
             return;
         }
-        if (!InputUtil.isKeyPressed(window, GLFW.GLFW_KEY_LEFT_CONTROL)
-            && !InputUtil.isKeyPressed(window, GLFW.GLFW_KEY_RIGHT_CONTROL)) {
-            return;
-        }
-        if (vertical == 0.0D) {
+
+        boolean ctrl = GLFW.glfwGetKey(window, GLFW.GLFW_KEY_LEFT_CONTROL) == GLFW.GLFW_PRESS
+            || GLFW.glfwGetKey(window, GLFW.GLFW_KEY_RIGHT_CONTROL) == GLFW.GLFW_PRESS;
+        if (!ctrl || vertical == 0.0D) {
             return;
         }
 
