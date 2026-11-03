@@ -1,30 +1,29 @@
 package sudy.sudy.mixin;
 
 import com.zurrtum.create.AllHandle;
-import com.zurrtum.create.AllSoundEvents;
 import com.zurrtum.create.content.contraptions.glue.SuperGlueEntity;
 import com.zurrtum.create.infrastructure.packet.c2s.SuperGlueRemovalPacket;
 import net.minecraft.entity.Entity;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.Text;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import sudy.sudy.glue.QuickGlueHandler;
+import sudy.sudy.glue.GlueUndoHandler;
 
-import java.util.ArrayList;
-import java.util.List;
-
+/**
+ * 在 Create 真正删掉胶水之前，把包围盒记进撤销栈。
+ * 不取消原逻辑：删除照常进行，我们只是顺手记一笔。
+ */
 @Mixin(AllHandle.class)
 public class GlueRemovalMixin {
 
     private static final double RANGE = 32.0D;
 
-    @Inject(method = "onSuperGlueRemoval", at = @At("HEAD"), cancellable = true)
-    private static void betterglue$removeWholeGroup(
+    @Inject(method = "onSuperGlueRemoval", at = @At("HEAD"))
+    private static void betterglue$recordRemoval(
         ServerPlayNetworkHandler listener,
         SuperGlueRemovalPacket packet,
         CallbackInfo ci
@@ -36,33 +35,10 @@ public class GlueRemovalMixin {
         if (!(clicked instanceof SuperGlueEntity glue)) {
             return;
         }
-        Text name = glue.getCustomName();
-        if (name == null) {
-            return;
-        }
-        String group = name.getString();
-        if (!group.startsWith(QuickGlueHandler.GROUP_PREFIX)) {
-            return;
-        }
         if (player.squaredDistanceTo(glue.getEntityPos()) > RANGE * RANGE) {
             return;
         }
 
-        List<SuperGlueEntity> targets = new ArrayList<>();
-        for (Entity entity : world.iterateEntities()) {
-            if (entity instanceof SuperGlueEntity other
-                && other.getCustomName() != null
-                && group.equals(other.getCustomName().getString())) {
-                targets.add(other);
-            }
-        }
-
-        for (SuperGlueEntity target : targets) {
-            target.spawnParticles();
-            target.discard();
-        }
-        AllSoundEvents.SLIME_ADDED.play(world, null, packet.soundSource(), 0.5F, 0.5F);
-
-        ci.cancel();
+        GlueUndoHandler.record(player, world, glue.getBoundingBox());
     }
 }
