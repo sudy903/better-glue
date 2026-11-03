@@ -13,10 +13,6 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import sudy.sudy.glue.GlueUndoHandler;
 
-/**
- * 在 Create 真正删掉胶水之前，把包围盒记进撤销栈。
- * 不取消原逻辑：删除照常进行，我们只是顺手记一笔。
- */
 @Mixin(AllHandle.class)
 public class GlueRemovalMixin {
 
@@ -36,6 +32,11 @@ public class GlueRemovalMixin {
             return;
         }
         if (player.squaredDistanceTo(glue.getEntityPos()) > RANGE * RANGE) {
+            return;
+        }
+
+        // 撤销恢复出来的胶水再次被删掉时不入库，避免"撤销 → 删除 → 再撤销"的死循环
+        if (GlueUndoHandler.consumeRestored(glue.getUuid())) {
             return;
         }
 
