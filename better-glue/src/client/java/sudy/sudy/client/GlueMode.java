@@ -3,7 +3,7 @@ package sudy.sudy.client;
 public enum GlueMode {
     NORMAL("正常模式"),
     QUICK_SELECT("快速框选"),
-    FINE_REMOVE("精细消除");
+    UNDO("撤销模式");
 
     private final String label;
 
