@@ -2,5 +2,7 @@
   "item.better-glue.glue_viewer": "胶水查看器",
   "item.better-glue.glue_viewer.tip1": "手持时持续显示所有已粘连的结构",
   "item.better-glue.glue_viewer.tip2": "显示 Create 强力胶圈出的区域",
-  "better-glue.msg.too_complex": "区域太复杂，需要拆成太多盒子，请分块选择"
+  "better-glue.msg.too_complex": "区域太复杂，需要拆成太多盒子，请分块选择",
+  "better-glue.msg.undone": "已恢复上一次移除的胶水",
+  "better-glue.msg.nothing_to_undo": "没有可撤销的操作"
 }
