@@ -9,13 +9,13 @@ import org.slf4j.LoggerFactory;
 import sudy.sudy.content.ModContent;
 import sudy.sudy.glue.GlueInfiniteDurability;
 import sudy.sudy.glue.GlueIntegrity;
+import sudy.sudy.glue.GlueUndoHandler;
 import sudy.sudy.glue.QuickGlueHandler;
 
 public class BetterGlue implements ModInitializer {
     public static final String MOD_ID = "better-glue";
 
-    /** 构建标记：确认装的是哪一版，每次改动都会变。 */
-    public static final String BUILD = "v6";
+    public static final String BUILD = "v7";
 
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
@@ -25,6 +25,7 @@ public class BetterGlue implements ModInitializer {
         GlueIntegrity.register();
         GlueInfiniteDurability.register();
         QuickGlueHandler.register();
+        GlueUndoHandler.register();
 
         ItemGroupEvents.modifyEntriesEvent(ItemGroups.TOOLS).register(entries -> entries.add(ModContent.GLUE_VIEWER));
 
