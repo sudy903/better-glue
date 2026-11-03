@@ -17,7 +17,9 @@ import sudy.sudy.net.UndoPayload;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 public final class GlueUndoHandler {
@@ -28,6 +30,10 @@ public final class GlueUndoHandler {
 
     private static final Map<UUID, Deque<Record>> HISTORY = new HashMap<>();
     private static final Map<UUID, Long> GRACE_UNTIL = new HashMap<>();
+    /**
+     * 撤销恢复出来的实体：它们再次被删除时不入库，避免无限循环。
+     */
+    private static final Set<UUID> RESTORED = new HashSet<>();
     private static final Deque<Record> AUTO_REMOVED = new ArrayDeque<>();
 
     private static int timer;
@@ -72,6 +78,22 @@ public final class GlueUndoHandler {
         return until != null && gameTime < until;
     }
 
+    /** 标记这个实体是撤销恢复出来的。 */
+    private static void markRestored(UUID entityUuid) {
+        RESTORED.add(entityUuid);
+        if (RESTORED.size() > 1024) {
+            RESTORED.clear();
+        }
+    }
+
+    /**
+     * 如果这个实体是撤销恢复出来的，就把标记消费掉并返回 true。
+     * 调用方据此跳过记录——撤销产生的胶水再次消失时不入库。
+     */
+    public static boolean consumeRestored(UUID entityUuid) {
+        return RESTORED.remove(entityUuid);
+    }
+
     private static void trim(Deque<Record> stack) {
         while (stack.size() > MAX_HISTORY) {
             stack.removeLast();
@@ -108,6 +130,8 @@ public final class GlueUndoHandler {
         world.spawnEntity(glue);
         // 10 秒宽限：这段时间里即使没有方块也不会被自动清掉
         GRACE_UNTIL.put(glue.getUuid(), world.getTime() + UNDO_GRACE_TICKS);
+        // 标记为"撤销产物"：它再消失时不入库
+        markRestored(glue.getUuid());
         glue.spawnParticles();
 
         int remaining = (stack == null ? 0 : stack.size()) + AUTO_REMOVED.size();
