@@ -80,8 +80,10 @@ public final class GlueIntegrity {
         }
 
         BetterGlue.LOGGER.debug("[better-glue] 清除悬空胶水：{}", box);
-        // 记进撤销栈，之后可以用撤销模式恢复回来
-        GlueUndoHandler.recordAuto(world, box);
+        // 撤销恢复出来的胶水再次消失时不入库，避免"撤销 → 消失 → 再撤销"的死循环
+        if (!GlueUndoHandler.consumeRestored(glue.getUuid())) {
+            GlueUndoHandler.recordAuto(world, box);
+        }
         glue.spawnParticles();
         glue.discard();
         EMPTY_STREAK.remove(glue.getUuid());
