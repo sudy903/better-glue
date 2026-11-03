@@ -66,10 +66,13 @@ public final class GlueUndoHandler {
         }
 
         Record record = stack.pop();
-        MinecraftServer server = player.getServer();
+
+        ServerWorld current = player.getEntityWorld();
+        MinecraftServer server = current.getServer();
         if (server == null) {
             return;
         }
+
         ServerWorld world = server.getWorld(record.dimension());
         if (world == null) {
             player.sendMessage(Text.translatable("better-glue.msg.nothing_to_undo"), true);
