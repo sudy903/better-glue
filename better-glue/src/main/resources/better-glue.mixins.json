@@ -3,7 +3,8 @@
 	"package": "sudy.sudy.mixin",
 	"compatibilityLevel": "JAVA_21",
 	"mixins": [
-		"SuperGlueNoDamageMixin"
+		"SuperGlueNoDamageMixin",
+		"GlueRemovalMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
