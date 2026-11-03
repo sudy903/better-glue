@@ -2,5 +2,7 @@
   "item.better-glue.glue_viewer": "Glue Viewer",
   "item.better-glue.glue_viewer.tip1": "Hold in hand to reveal every glued structure",
   "item.better-glue.glue_viewer.tip2": "Shows the areas created by Create's Super Glue",
-  "better-glue.msg.too_complex": "Selection is too complex (too many boxes) - please split it"
+  "better-glue.msg.too_complex": "Selection is too complex (too many boxes) - please split it",
+  "better-glue.msg.undone": "Restored the last removed glue",
+  "better-glue.msg.nothing_to_undo": "Nothing to undo"
 }
